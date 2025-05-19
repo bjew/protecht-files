@@ -55,6 +55,8 @@ The query for question 1 is in the `kaggle.sql` file.
 - Finally, it groups by currency and group ID to calculate average streak lengths and average percentage change over streaks.
 - It then uses `RANK() OVER` to compute rankings and produce the final result set.
 
+Query results (exported) are in the file `currency_momentum.csv`
+
 ### Question 2: Custom Metrics
 
 Two custom volatility metrics were analyzed:
@@ -68,6 +70,8 @@ The SQL for this is also in `kaggle.sql`. It:
 - Finds the `MIN` and `MAX` values for `exchange_rate`.
 - Uses those to calculate the variance measures.
 
+Query results (exported) are in the file `currency_variance.csv`
+
 ---
 
 ## BONUS
@@ -77,6 +81,8 @@ The SQL for this is also in `kaggle.sql`.
 - Modified the query from Question 1 to just show `pct_change` and ranked the top 10.
 - Added conditions to filter out `rate_date = CURRENT_DATE`.
 - Re-ran the same CTEs to get the previous day's ranking.
+
+Query results (exported) are in the file `bonus.csv`
 
 The Python code to connect to PostgreSQL, run the query, and write to S3 is in the file `daily_export.py`.
 
