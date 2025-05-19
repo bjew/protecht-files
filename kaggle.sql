@@ -47,7 +47,7 @@ streak_counts as (
 	select 
 		currency_symbol, 
 		streak_group_id, 
-		count(*) as streak_count
+		count(*) - 1 as streak_count
 	from streak_groups 
 	group by currency_symbol, streak_group_id 
 	having count(*) > 1 
