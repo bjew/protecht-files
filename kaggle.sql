@@ -15,6 +15,7 @@ is_streak_day as (
 		currency_symbol,
 		rate_date,
 		exchange_rate,
+		lag(exchange_rate,1) over (partition by currency_symbol order by rate_date) as prev_exchange_rate,
 		case
 			when increased and ((lag(increased, 1) over (partition by currency_symbol order by rate_date) is true
 				and lag(increased, 2) over (partition by currency_symbol order by rate_date) is true)
@@ -25,7 +26,7 @@ is_streak_day as (
 			then true
 			else false 
 		end as streak_part,
-		increased and not lag(increased, 1) over (partition by currency_symbol order by rate_date) is true as start_increase
+		not increased and lead(increased, 1) over (partition by currency_symbol order by rate_date) is true as start_increase
 	from rate_increased 
 	group by currency_symbol, exchange_rate, rate_date, increased 
 	order by currency_symbol, rate_date desc
@@ -35,19 +36,20 @@ streak_groups AS (
         currency_symbol,
         rate_date,
         exchange_rate,
+        prev_exchange_rate,
         streak_part,
         start_increase,
-        SUM(case when streak_part and not start_increase then 0 else 1 end) over (partition by currency_symbol order by rate_date asc) as streak_group_id
+        SUM(case when streak_part then 0 else 1 end) over (partition by currency_symbol order by rate_date asc) as streak_group_id
     from
         is_streak_day
-    group by currency_symbol, exchange_rate, rate_date, streak_part, start_increase 
-    order by currency_symbol, rate_date
+    group by currency_symbol, exchange_rate, prev_exchange_rate, rate_date, streak_part, start_increase 
+    order by currency_symbol, rate_date desc
 ),
 streak_counts as (
 	select 
 		currency_symbol, 
 		streak_group_id, 
-		count(*) - 1 as streak_count
+		count(*) -1  as streak_count
 	from streak_groups 
 	group by currency_symbol, streak_group_id 
 	having count(*) > 1 
